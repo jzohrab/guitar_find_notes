@@ -9,11 +9,26 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            /* display: flex; /* Use flexbox to align items */
+        }
+        .title {
+            width: 100%;
+            background-color: darkgreen;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
         }
         .game-container {
-            max-width: 400px;
-            margin: 0 auto;
-            text-align: center;
+            display: flex; /* Nested flex container */
+            flex-direction: column; /* Stack items vertically */
+            align-items: flex-start; /* Align items to the left */
+            margin-right: 20px; /* Add space between the two containers */
         }
         label, select, input {
             display: block;
@@ -23,10 +38,11 @@
             margin-top: 20px;
         }
         .note-display {
-            font-size: 56px;
+            font-size: 400px;
             font-weight: bold;
             color: blue;
-            margin-top: 20px;
+            flex: 1;
+            margin-left: 50px;
         }
 
         .form-group {
@@ -42,34 +58,42 @@
         }
         .form-group input {
             flex: 0 0 20px;
-            width: 20px;
+            width: 30px;
         }
-        
     </style>
     <script>
       const synth = new Tone.Synth().toDestination();
 
+      function _get_int(elname) {
+        return parseInt(document.getElementById(elname).value, 10);
+      }
+      
       function startGame() {
         Tone.start();
-        let selectedNotes = Array.from(document.getElementById('notes').selectedOptions).map(option => option.value);
-        const pauseDuration = parseInt(document.getElementById('pauseDuration').value, 10);
-        const qpauseDuration = parseInt(document.getElementById('nextQuestionPauseDuration').value, 10);
+        const pauseDuration = _get_int('pauseDuration');
+        const qpauseDuration = _get_int('nextQuestionPauseDuration');
+        const repeatCount = _get_int('repeatCount');
 
+        let selectedNotes = Array.from(document.getElementById('notes').selectedOptions).map(option => option.value);
         if (selectedNotes.length === 0) {
           alert("Please select at least one note.");
           return;
         }
 
-        shuffleArray(selectedNotes);
+        let questions = [];
+        for (var i = 0; i < repeatCount; i++) {
+          questions = questions.concat(selectedNotes);
+        }
+        shuffleArray(questions);
 
         const playNextNote = function() {
-          if (selectedNotes.length == 0) {
+          if (questions.length == 0) {
             const noteDisplay = document.getElementById('noteDisplay');
-            noteDisplay.textContent = "Done!";
+            noteDisplay.textContent = "!";
             return;
           }
 
-          const note = selectedNotes.pop()
+          const note = questions.pop()
 
           playRandomNote(note, pauseDuration);
 
@@ -110,9 +134,10 @@
           const option = document.createElement('option');
           option.value = note;
           option.textContent = note;
+          if ("ABCDEFG".indexOf(note) != -1)
+            option.selected = "true";
           notesSelect.appendChild(option);
         });
-
         notesSelect.size = notesArray.length;
       }
 
@@ -120,26 +145,33 @@
     </script>
 </head>
 <body>
-    <div class="game-container">
-        <h1>Find notes</h1>
-        <form id="gameForm">
-            <div class="form-group">
-                <label for="notes">Select Notes:</label>
-                <select id="notes" multiple></select>
-            </div>
+  <div class="title"><h1>Find notes</h1></div>
+  <div class="main-container">
+  <div class="game-container">
+    <form id="gameForm">
+      <div class="form-group">
+        <label for="notes">Select Notes:</label>
+        <select id="notes" multiple></select>
+      </div>
+      <div class="form-group">
+        <label for="repeatCount">Repeat count:</label>
+        <input type="number" id="repeatCount" min="1" value="2">
+      </div>
+      <div class="form-group">
+        <label for="pauseDuration">Show answer after (seconds):</label>
+        <input type="number" id="pauseDuration" min="1" value="2">
+      </div>
+      <div class="form-group">
+        <label for="nextQuestionPauseDuration">Pause between questions (seconds):</label>
+        <input type="number" id="nextQuestionPauseDuration" min="1" value="5">
+      </div>
 
-            <div class="form-group">
-                <label for="pauseDuration">Pause before tone (seconds):</label>
-                <input type="number" id="pauseDuration" min="1" value="2">
-            </div>
-            <div class="form-group">
-                <label for="nextQuestionPauseDuration">Time between questions (seconds):</label>
-                <input type="number" id="nextQuestionPauseDuration" min="1" value="5">
-            </div>
+      <button type="button" onclick="startGame()">Start</button>
+    </form>
+  </div>
 
-            <button type="button" onclick="startGame()">Start Game</button>
-        </form>
-        <div class="note-display" id="noteDisplay"></div>
-    </div>
+  <div class="note-display" id="noteDisplay"></div>
+  </div>
+
 </body>
 </html>
