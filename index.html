@@ -63,11 +63,16 @@
     </style>
     <script>
       const synth = new Tone.Synth().toDestination();
-
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
       function _get_int(elname) {
         return parseInt(document.getElementById(elname).value, 10);
       }
-      
+
+      function stopGame() {
+        window.location.reload();
+      }
+
       function startGame() {
         Tone.start();
         const pauseDuration = _get_int('pauseDuration');
@@ -102,6 +107,24 @@
         playNextNote();
       }
 
+      function playClickSound() {
+        var oscillator = audioContext.createOscillator();
+        var gainNode = audioContext.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(1000, audioContext.currentTime); // Frequency in Hz
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Set the duration of the click sound
+        gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.03);
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.03);
+      }
+      
       function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -115,8 +138,13 @@
         const noteDisplay = document.getElementById('noteDisplay');
         noteDisplay.textContent = note;
 
-        const playNote = note + '4';
-        synth.triggerAttackRelease("C6", "64n", Tone.now());
+        playClickSound();
+
+        let register = '3';
+        if ("CDEFCbDbEbFbC#D#E#F#".indexOf(note) != -1)
+          register = '4';
+        const playNote = note + register;
+        // synth.triggerAttackRelease("C6", "64n", Tone.now());
         synth.triggerAttackRelease(playNote, "8n", Tone.now() + pauseDuration);
       }
 
@@ -166,6 +194,7 @@
       </div>
 
       <button type="button" onclick="startGame()">Start</button>
+      <button type="button" onclick="stopGame()">Stop</button>
     </form>
   </div>
 
