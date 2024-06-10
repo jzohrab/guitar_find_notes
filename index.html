@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Guessing Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.39/Tone.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .game-container {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        label, select, input {
+            display: block;
+            margin: 10px 0;
+        }
+        button {
+            margin-top: 20px;
+        }
+        .note-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+    <script>
+      const synth = new Tone.Synth().toDestination();
+
+      function startGame() {
+        const selectedNotes = Array.from(document.getElementById('notes').selectedOptions).map(option => option.value);
+        const pauseDuration = parseInt(document.getElementById('pauseDuration').value, 10);
+
+        if (selectedNotes.length === 0) {
+          alert("Please select at least one note.");
+          return;
+        }
+
+        // Make a click sound to indicate the start of the test
+        synth.triggerAttackRelease("C7", "32n");
+        playRandomNote(selectedNotes, pauseDuration);
+      }
+
+      function playRandomNote(notes, pauseDuration) {
+        const randomNote = notes[Math.floor(Math.random() * notes.length)];
+        const noteDisplay = document.getElementById('noteDisplay');
+        noteDisplay.textContent = randomNote;
+
+        const playNote = randomNote + '4';
+        setTimeout(() => {
+          synth.triggerAttackRelease(playNote, "8n");
+        }, pauseDuration * 1000);
+      }
+
+    </script>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Note Guessing Game</h1>
+        <form id="gameForm">
+            <label for="notes">Select Notes:</label>
+            <select id="notes" multiple>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F#">F#</option>
+            </select>
+            <label for="pauseDuration">Pause Duration (seconds):</label>
+            <input type="number" id="pauseDuration" min="1" value="1">
+            <button type="button" onclick="startGame()">Start Game</button>
+        </form>
+        <div class="note-display" id="noteDisplay"></div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
