@@ -72,19 +72,18 @@
         Tone.start();
         const pauseDuration = _get_int('pauseDuration');
         const qpauseDuration = _get_int('nextQuestionPauseDuration');
-        const repeatCount = _get_int('repeatCount');
 
         let selectedNotes = Array.from(document.getElementById('notes').selectedOptions).map(option => option.value);
         if (selectedNotes.length === 0) {
           alert("Please select at least one note.");
           return;
         }
+        shuffleArray(selectedNotes);
 
         let questions = [];
-        for (var i = 0; i < repeatCount; i++) {
+        for (var i = 0; i < _get_int('repeatCount'); i++) {
           questions = questions.concat(selectedNotes);
         }
-        shuffleArray(questions);
 
         const playNextNote = function() {
           if (questions.length == 0) {
@@ -94,12 +93,12 @@
           }
 
           const note = questions.pop()
-
           playRandomNote(note, pauseDuration);
 
           setTimeout(() => { playNextNote(); }, (pauseDuration + qpauseDuration) * 1000);
         };
 
+        // Kick things off.
         playNextNote();
       }
 
